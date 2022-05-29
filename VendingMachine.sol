@@ -26,4 +26,6 @@ contract VendingMachine {
         donutBalances[address(this)] -= amount;
         donutBalances[msg.sender] += amount;
     }
+
+    //add comment
 }
