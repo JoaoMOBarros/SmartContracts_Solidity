@@ -4,21 +4,22 @@ pragma solidity >=0.8.0 <0.9.0;
 
 contract Report{
 
-    enum ThreatLevel {Low, Moderate, Substatial, Severe, Critical}
+    //enum ThreatLevel {Low, Moderate, Substatial, Severe, Critical}
 
     address owner;
     mapping (address => int) peerReview;
     string package;
     string version;
     int votes;
-    ThreatLevel level;
+    uint level;
 
-    constructor(string memory packageName, string memory packageVersion, uint8 threatLevel){
+    constructor(string memory packageName, string memory packageVersion, uint threatLevel){
         owner = msg.sender;
         package = packageName;
         version = packageVersion;
         votes = 0;
-        level = ThreatLevel(threatLevel);
+        //level = ThreatLevel(threatLevel);
+        level = threatLevel;
     }
 
     modifier removePreviousReview(){
@@ -61,5 +62,9 @@ contract Report{
 
     function getVotesFromReport() public view returns (int){
         return votes;
+    }
+
+    function getScoreFromReport() public view returns (uint){
+        return level;
     }
 }

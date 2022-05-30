@@ -45,8 +45,8 @@ contract RiskReview{
         }
     }
 
-    function createReview(string calldata packageName, string calldata packageVersion, uint8 threatLevel) external {
-        Report newReport = new Report(packageName, packageVersion, threatLevel);
+    function createReview(string calldata packageName, string calldata packageVersion, uint threatLevel) external {
+        Report newReport = new Report(packageName,packageVersion, threatLevel);
 
         postedReviews[packageName].push(newReport);
     }
@@ -55,14 +55,18 @@ contract RiskReview{
         return postedReviews[packageName];
     }
 
-    function getPackageScore(string calldata packageName) public view checkPackage(packageName) returns (uint){
+    event Log(uint lala);
+    event Lig(uint[] lele);
+
+    function getPackageScore(string calldata packageName) public checkPackage(packageName) returns (uint){
         Report[] memory reports = postedReviews[packageName];
-        int[] memory votes;
-        for(uint i = 0; i<reports.length; i++){
-            votes[i] = reports[i].getVotesFromReport();
-        } 
-        uint sumVotes = uint(getArraySum(votes));
-        return sumVotes/reports.length;
+        uint sum = 0;
+        emit Log(uint(100));
+        for(uint i = 0; i <= reports.length - 1; i++){
+            sum += reports[i].getScoreFromReport();
+        }
+        emit Log(uint(200));
+       return sum/(reports.length-1);
     }
 
 }
