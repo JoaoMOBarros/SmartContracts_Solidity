@@ -28,18 +28,18 @@ contract RiskReview{
     /// This package does not have reviews so far
     error UnavailablePackage();
 
-    modifier checkReview(string calldata packageName, int index){
-        if(postedReviews[packageName] == 0) {
-            revert UnavailablePackage();
-        }
-        if(postedReviews[packageName].length <= index) {
-            revert UnavailableReview();
-        }
+    // modifier checkReview(string calldata packageName, int index){
+    //     if(postedReviews[packageName] == 0) {
+    //         revert UnavailablePackage();
+    //     }
+    //     if(postedReviews[packageName].length <= index) {
+    //         revert UnavailableReview();
+    //     }
 
-        Review storage review_ = postedReviews[packageName][index];
+    //     Review storage review_ = postedReviews[packageName][index];
 
-        _;
-    }
+    //     _;
+    // }
 
     function createReview(string calldata packageName, string calldata packageVersion, uint8 threatLevel) external {
         Review memory review_;
@@ -56,9 +56,9 @@ contract RiskReview{
     //     return postedReviews[packageName];
     // }
 
-    function retrieveReview(string calldata packageName, int calldata index){
+    // function retrieveReview(string calldata packageName, int calldata index){
         
-    }
+    // }
 
 }
 
