@@ -26,7 +26,7 @@ contract User{
 
     function getActivityReputation(Activity activity_) private pure returns (int score){
         if(activity_ == Activity.Vote) return 1;
-        if(activity_ == Activity.PeerReviewAccepted) return 5 ;
+        if(activity_ == Activity.PeerReviewAccepted) return 4 ;
         if(activity_ == Activity.PeerReviewRejected) return -1 ;
         if(activity_ == Activity.ReportAccepeted) return 7 ;
         if(activity_ == Activity.ReportRejected) return -2 ;

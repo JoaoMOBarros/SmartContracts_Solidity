@@ -15,7 +15,7 @@ contract Trial{
     Report public report;
     address[] public judges;
     bool public isTrialOpen;
-    TrialVote[] public votes;
+    mapping(address=>TrialVote) public votes;
 
     constructor(Report _report){
         report = _report;
@@ -42,7 +42,7 @@ contract Trial{
     error OnlyOnce();
 
     modifier onlyOnce(){
-        for(uint i = 0; i< judges.length -1; i++){
+        for(uint i = 0; i < judges.length; i++){
             if(judges[i] == msg.sender){
                 revert OnlyOnce();
             }
@@ -56,7 +56,56 @@ contract Trial{
         require(isTrialOpen == true, "This trial no longer can receive votes");
         TrialVote memory _trialVote = TrialVote(_user, _vote*_user.reputation(), comment);
         judges.push(msg.sender);
-        votes.push(_trialVote);
+        votes[msg.sender]= _trialVote;
+    }
+
+    function calculateTotalScore() internal view returns (int score){
+        for(uint i = 0; i < judges.length; i++){
+            score += votes[judges[i]].weight;
+        }
+    }
+
+    function publishReport(int _score) internal {
+        if(_score >= 0){
+            report.updateReportAfterTrial(_score, 1);
+        }
+        else{
+            report.updateReportAfterTrial(_score, 2);
+        }
+    }
+
+    function distributeReputation() external {
+        require(isTrialOpen == true, "Reputation already distributed");
+        //First close the trial too avoid rentry attaks;
+        isTrialOpen = false;
+        int score = 0;
+        int currentScore = calculateTotalScore();
+
+        //Update report onwer score
+        if(currentScore > int(-1)){
+            //ReportAccepted (add 7p)
+            report.owner().addActivity(3);
+        }
+        else{
+            //ReportRejected (add -2p)
+            report.owner().addActivity(4);
+        }
+
+        for(uint i=0; i < judges.length; i++){
+            if(votes[judges[i]].weight * currentScore >= 0){
+                //PeerReviewApproved (add 4p)
+                votes[judges[i]].user.addActivity(1);
+                score++;
+            }
+            else{
+                //PeerReviewRejected (add -1p)
+                votes[judges[i]].user.addActivity(2);
+                score--;
+            }
+        }
+
+        publishReport(score);
+
     }
 
 }

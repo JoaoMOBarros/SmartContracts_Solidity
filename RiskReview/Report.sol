@@ -2,24 +2,32 @@
 
 pragma solidity >=0.8.0 <0.9.0;
 
+import './User.sol';
+import './Trial.sol';
+
 contract Report{
 
-    //enum ThreatLevel {Low, Moderate, Substatial, Severe, Critical}
+    enum States {Review, Published, Flagged}
 
-    address owner;
-    mapping (address => int) peerReview;
-    string package;
-    string version;
-    int votes;
-    uint level;
+    User public owner;
+    uint public createdAt;
+    Trial trial;
 
-    constructor(string memory packageName, string memory packageVersion, uint threatLevel){
-        owner = msg.sender;
+    mapping (address => int) public peerReview;
+    string public package;
+    string public version;
+    int public votes;
+    uint public level;
+    States public state;
+
+    constructor(User _user, string memory packageName, string memory packageVersion, uint threatLevel){
+        owner = _user;
         package = packageName;
         version = packageVersion;
         votes = 0;
-        //level = ThreatLevel(threatLevel);
         level = threatLevel;
+        createdAt = block.timestamp;
+        state = States.Review;
     }
 
     modifier removePreviousReview(){
@@ -30,41 +38,50 @@ contract Report{
         _;
     }
 
+    /// You have to wait until the judging is performed.
+    error NotJudged();
+
+    modifier ifPublished(States _state){
+        if(_state != States.Published){
+            revert NotJudged();
+        }
+        _;
+    }
+
     /// The owner cannot vote in its own report
     error OnlyPeer();
 
-    /// Only the owner of report can call this function
-    error OnlyOwner();
-
     modifier onlyPeer(){
-        if(msg.sender == owner){
+        if(msg.sender == owner.owner()){
             revert OnlyPeer();
         }
         _;
     }
 
+    /// Only the owner of report can call this function
+    error OnlyOwner();
+
     modifier onlyOwner(){
-        if(msg.sender != owner){
+        if(msg.sender != owner.owner()){
             revert OnlyOwner();
         }
         _;
     }
 
-    function upvote() external removePreviousReview() onlyPeer(){
+    function upvote() external removePreviousReview() onlyPeer() ifPublished(state){
         peerReview[msg.sender] = 1;
         votes++;
     }
 
-    function downvote() external removePreviousReview() onlyPeer(){
+    function downvote() external removePreviousReview() onlyPeer() ifPublished(state){
         peerReview[msg.sender] = -1;
         votes--;
     }
 
-    function getVotesFromReport() public view returns (int){
-        return votes;
+    function updateReportAfterTrial(int _score, uint8 _state) external {
+        require(state == States.Review, "Cannot perform this action");
+        state = States(_state);
+        votes = _score;
     }
 
-    function getScoreFromReport() public view returns (uint){
-        return level;
-    }
 }
