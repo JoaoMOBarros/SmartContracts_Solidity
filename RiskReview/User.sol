@@ -13,7 +13,7 @@ contract User{
     }
 
     address public owner;
-    uint createdAt;
+    uint public createdAt;
     Report[] reports;
     ActivityReceipt[] activities;
     int public reputation;
